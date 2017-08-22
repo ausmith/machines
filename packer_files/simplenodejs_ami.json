@@ -1,0 +1,35 @@
+{
+  "variables": {
+    "SYSTEM_CATEGORY": "{{env `SYSTEM_CATEGORY`}}",
+    "source_ami": "{{env `SOURCE_AMI`}}",
+    "root_username": "{{env `ROOT_USERNAME`}}",
+    "home": "{{env `HOME`}}"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-east-1",
+      "subnet_id": "subnet-3197b647",
+      "source_ami": "{{user `source_ami`}}",
+      "security_group_id": "sg-15a01a65",
+      "instance_type": "t2.micro",
+      "ssh_username": "{{user `root_username`}}",
+      "ssh_keypair_name": "ami_builder",
+      "ssh_private_key_file": "{{user `home`}}/ssh/ami_builder.pem",
+      "ami_name": "simplenodejs_ami_{{timestamp}}"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "{{ .Vars }} sudo -E -S bash '{{ .Path }}'",
+      "remote_folder": "/dev/shm",
+      "scripts": [
+        "./scripts/upgrade_system.sh",
+        "./scripts/install_nginx.sh",
+        "./scripts/install_our_nodejs.sh",
+        "./scripts/clean_packer_logs.sh"
+      ]
+    }
+  ]
+}
